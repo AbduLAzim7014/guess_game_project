@@ -1,2 +1,43 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
+
+# Sample quiz data
+quiz_data = [
+    {
+        "id": 1,
+        "question": "What is the capital of France?",
+        "options": ["Berlin", "Madrid", "Paris", "Lisbon"],
+        "answer": "Paris"
+    },
+    {
+        "id": 2,
+        "question": "Which planet is known as the Red Planet?",
+        "options": ["Earth", "Mars", "Jupiter", "Saturn"],
+        "answer": "Mars"
+    },
+    {
+        "id": 3,
+        "question": "Who wrote 'Romeo and Juliet'?",
+        "options": ["Shakespeare", "Hemingway", "Tolkien", "Austen"],
+        "answer": "Shakespeare"
+    }
+]
+
+@app.route('/api/quiz', methods=['GET'])
+def get_quiz():
+    for q in quiz_data:
+        q_copy = q.copy()
+        del q_copy['answer']  # Hide answers
+        yield q_copy
+
+@app.route('/api/submit', methods=['POST'])
+def submit_quiz():
+    user_answers = request.json.get('answers', {})
+    score = sum(1 for q in quiz_data if user_answers.get(str(q['id'])) == q['answer'])
+    return jsonify({"score": score, "total": len(quiz_data)})
+
+if __name__ == '__main__':
+    app.run(debug=True)
